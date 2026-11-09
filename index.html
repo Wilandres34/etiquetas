@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mis Etiquetas</title>
+<style>
+:root{--rosa:#ff8fb8;--rosa2:#ffd6e7;--fucsia:#e0457b;--lila:#b79cf2;--fondo:#fff3f8;--texto:#4a2a3a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:ui-rounded,"Avenir Next Rounded","Trebuchet MS",system-ui,sans-serif;background:var(--fondo);color:var(--texto);padding-bottom:90px}
+header{background:linear-gradient(135deg,var(--rosa),var(--lila));color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+header h1{font-size:20px;margin:0}
+.chip{background:rgba(255,255,255,.3);border-radius:20px;padding:5px 12px;font-size:13px}
+.chip.ok{background:#fff;color:#1c8a4b;font-weight:bold}
+nav{display:flex;background:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #e0457b22}
+nav button{flex:1;border:0;background:none;padding:13px 4px;font-size:15px;color:#a07088;font-family:inherit}
+nav button.on{color:var(--fucsia);font-weight:bold;border-bottom:3px solid var(--fucsia)}
+main{padding:12px;max-width:760px;margin:auto}
+section{display:none}section.on{display:block}
+.card{background:#fff;border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px #e0457b18}
+.card h2{margin:0 0 10px;font-size:16px;color:var(--fucsia)}
+label{display:block;font-size:13px;margin:8px 0 3px;color:#7a4a60}
+label b{color:var(--fucsia)}
+input[type=text],input[type=number],input[type=search],select,textarea{width:100%;padding:11px;border:2px solid var(--rosa2);border-radius:12px;font-size:16px;font-family:inherit;background:#fffafc;color:var(--texto)}
+input[type=range]{width:100%;accent-color:var(--fucsia)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+button.b{border:0;border-radius:14px;padding:12px 14px;font-size:15px;font-family:inherit;background:var(--rosa2);color:var(--fucsia);font-weight:bold}
+button.b.p{background:var(--fucsia);color:#fff}
+button.b.s{padding:7px 10px;font-size:13px}
+button.b:disabled{opacity:.5}
+.seg{display:flex;gap:6px}.seg button{flex:1;border:2px solid var(--rosa2);background:#fff;border-radius:12px;padding:10px;font-size:16px;font-family:inherit;color:var(--fucsia)}
+.seg button.on{background:var(--fucsia);color:#fff;border-color:var(--fucsia)}
+.item{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid #ffe3ee}
+.item:last-child{border:0}
+.item .t{flex:3;min-width:0}.item .t div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t small{color:#a07088}
+.step{display:flex;align-items:center;gap:6px}.step button{width:34px;height:34px;border-radius:50%;border:0;background:var(--rosa2);color:var(--fucsia);font-size:20px;font-weight:bold}
+.step span{min-width:24px;text-align:center;font-weight:bold}
+.pick{width:100%;text-align:left;border:0;background:#fff7fb;border-radius:12px;padding:10px;margin:4px 0;font-family:inherit;font-size:15px;color:var(--texto)}
+.pick small{color:#a07088;display:block}
+.warn{background:#fff0c9;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:8px}
+.muted{color:#a07088;font-size:13px}
+canvas#prev{width:100%;border:2px dashed var(--rosa);border-radius:10px;background:#fff;image-rendering:pixelated}
+#bar{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:10px 12px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -3px 12px #e0457b30;display:flex;gap:8px;z-index:9}
+#bar button{flex:1}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#4a2a3a;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+#log{font-size:12px;background:#fff7fb;border-radius:10px;padding:8px;white-space:pre-wrap;max-height:160px;overflow:auto;margin-top:8px}
+.prog{height:10px;background:var(--rosa2);border-radius:6px;overflow:hidden;margin-top:8px;display:none}.prog i{display:block;height:100%;width:0;background:var(--fucsia)}
+#printSheet{display:none}
+@media print{body>*:not(#printSheet){display:none!important}#printSheet{display:block}#printSheet img{display:block;page-break-after:always}}
+</style>
+</head>
+<body>
+<header><h1>💗 Mis Etiquetas</h1><div id="estado" class="chip">Sin impresora</div></header>
+<nav id="tabs"><button data-t="print" class="on">Imprimir</button><button data-t="prod">Productos</button><button data-t="aj">Ajustes</button></nav>
+
+<main>
+<!-- ================= IMPRIMIR ================= -->
+<section id="t-print" class="on">
+  <div class="card">
+    <h2>✨ Etiqueta nueva</h2>
+    <label>Nombre del producto</label>
+    <input type="text" id="nNom" placeholder="Solo escribe el nombre" autocomplete="off">
+    <div class="muted" style="margin-top:6px">Código que sigue: <b id="nSig"></b></div>
+    <div class="row">
+      <div><label>Prefijo</label><input type="text" id="nPre"></div>
+      <div><label>Siguiente número</label><input type="number" id="nNum" inputmode="numeric"></div>
+      <div><label>Dígitos</label><input type="number" id="nPad" inputmode="numeric"></div>
+    </div>
+    <button class="b p" id="nAdd" style="width:100%;margin-top:10px">Crear etiqueta y añadir 💗</button>
+  </div>
+
+  <div class="card">
+    <h2>🔎 Buscar producto</h2>
+    <input type="search" id="q" placeholder="Nombre o código…" autocomplete="off">
+    <div id="res"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧺 Etiquetas por imprimir <span class="muted" id="totalEt"></span></h2>
+    <div id="cola"></div>
+    <div class="row" style="margin-top:8px"><button class="b s" id="vaciar">Vaciar lista</button></div>
+  </div>
+
+  <div class="card">
+    <h2>🔢 Códigos consecutivos</h2>
+    <div class="row">
+      <div><label>Prefijo (opcional)</label><input type="text" id="sPre" placeholder="ej. A"></div>
+      <div><label>Número inicial</label><input type="number" id="sIni" inputmode="numeric" value="1"></div>
+    </div>
+    <div class="row">
+      <div><label>Cantidad</label><input type="number" id="sCan" inputmode="numeric" value="10"></div>
+      <div><label>Dígitos (con ceros)</label><input type="number" id="sPad" inputmode="numeric" value="6"></div>
+    </div>
+    <label>Texto de la etiqueta (opcional)</label>
+    <input type="text" id="sTxt" placeholder="ej. Nombre del producto">
+    <div class="muted" id="sHint" style="margin-top:6px"></div>
+    <div id="sWarn"></div>
+    <div class="row" style="margin-top:8px"><button class="b" id="sUsar">Usar el siguiente</button><button class="b p" id="sAdd">Añadir a la lista</button></div>
+  </div>
+
+  <div class="card">
+    <h2>🎀 Cómo se ve</h2>
+    <label>Columnas de etiquetas por fila</label>
+    <div class="seg" data-seg="cols"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button></div>
+    <div class="row">
+      <div><label>Copias por etiqueta</label><input type="number" data-k="copias" min="1" inputmode="numeric"></div>
+      <div><label>Tipo de letra</label>
+        <select data-k="font">
+          <option value="sans">Normal</option><option value="redonda">Redondita</option><option value="serif">Elegante</option>
+          <option value="maquina">Máquina</option><option value="gruesa">Gruesa</option><option value="cursiva">Cursiva</option><option value="globo">Globo</option>
+        </select></div>
+    </div>
+    <label>Nombre del local (fila de arriba)</label><input type="text" data-k="local" placeholder="ej. Mi Tienda">
+    <label>Tamaño de letra del local <b id="v_localSize"></b></label><input type="range" data-k="localSize" min="10" max="36">
+    <label>Tamaño de letra del nombre del producto <b id="v_nameSize"></b></label><input type="range" data-k="nameSize" min="12" max="40">
+    <label>Tamaño del número bajo el código <b id="v_codeSize"></b></label><input type="range" data-k="codeSize" min="10" max="32">
+    <label>Alto del código de barras <b id="v_barH"></b>%</label><input type="range" data-k="barH" min="25" max="65">
+    <label>Ancho del código de barras <b id="v_barW"></b>%</label><input type="range" data-k="barW" min="55" max="100">
+    <label>Oscuridad de la impresión <b id="v_dark"></b></label><input type="range" data-k="dark" min="1" max="5">
+    <div class="row" style="margin-top:8px">
+      <label style="margin:0"><input type="checkbox" data-k="showLocal"> Local</label>
+      <label style="margin:0"><input type="checkbox" data-k="showName"> Nombre</label>
+      <label style="margin:0"><input type="checkbox" data-k="showCode"> Número</label>
+      <label style="margin:0"><input type="checkbox" data-k="showPrice"> Precio</label>
+      <label style="margin:0"><input type="checkbox" data-k="bold"> Negrita</label>
+    </div>
+    <div style="margin-top:12px"><canvas id="prev"></canvas></div>
+    <div class="muted" id="prevNote"></div>
+  </div>
+
+  <div class="card">
+    <h2>🖨️ Impresora</h2>
+    <div class="row"><button class="b" id="conectar">Conectar portátil (Bluetooth)</button><button class="b" id="conectarTodos">Ver todos los equipos</button></div>
+    <div class="row" style="margin-top:8px"><button class="b" id="prueba">Imprimir prueba</button><button class="b" id="sistema">Imprimir con el sistema (oficina)</button></div>
+    <div class="muted" style="margin-top:6px">La portátil se usa abriendo esta página en <b>Bluefy</b>. La impresora de la oficina (SAT) se usa desde el computador con «Imprimir con el sistema».</div>
+    <div class="prog" id="prog"><i></i></div>
+    <div id="log" style="display:none"></div>
+  </div>
+</section>
+
+<!-- ================= PRODUCTOS ================= -->
+<section id="t-prod">
+  <div class="card">
+    <h2>➕ Guardar producto</h2>
+    <label>Código</label><input type="text" id="pC" inputmode="text">
+    <label>Nombre</label><input type="text" id="pN">
+    <label>Precio (opcional)</label><input type="text" id="pP" placeholder="ej. $ 12.000">
+    <div class="row" style="margin-top:10px"><button class="b" id="pLimpiar">Limpiar</button><button class="b p" id="pGuardar">Guardar</button></div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Mis productos <span class="muted" id="pCount"></span></h2>
+    <input type="search" id="pBuscar" placeholder="Buscar en mis productos…">
+    <div id="pLista"></div>
+  </div>
+
+  <div class="card">
+    <h2>📥 Traer productos de mi inventario</h2>
+    <div class="muted">Exporta tu inventario como <b>CSV</b> (Guardar como → CSV) o copia las filas desde Excel y pégalas aquí.</div>
+    <label>Archivo CSV</label><input type="file" id="pFile" accept=".csv,.txt,text/csv,text/plain">
+    <label>…o pega aquí las filas</label><textarea id="pPaste" rows="4" placeholder="codigo;nombre;precio"></textarea>
+    <button class="b" id="pLeer" style="margin-top:8px">Leer</button>
+    <div id="pMap"></div>
+  </div>
+
+  <div class="card">
+    <h2>💾 Copia de seguridad</h2>
+    <div class="muted">Guarda tus productos y ajustes. Así no los pierdes si cambias de navegador o de equipo.</div>
+    <div class="row" style="margin-top:8px"><button class="b" id="expBack">Descargar copia</button><button class="b" id="copyBack">Copiar copia</button></div>
+    <label>Restaurar copia (archivo)</label><input type="file" id="impBack" accept=".json,application/json">
+    <label>Productos para compartir con mis colaboradoras</label>
+    <div class="row"><button class="b" id="expProd">Descargar productos.json</button><button class="b" id="expCsv">Descargar CSV</button></div>
+    <div class="muted" style="margin-top:6px">Si subes <b>productos.json</b> a GitHub junto a esta página, todas tus colaboradoras verán los mismos productos.</div>
+  </div>
+</section>
+
+<!-- ================= AJUSTES ================= -->
+<section id="t-aj">
+  <div class="card">
+    <h2>📏 Tamaño de la etiqueta</h2>
+    <div class="row">
+      <div><label>Ancho (mm)</label><input type="number" step="0.5" data-k="labelW" inputmode="decimal"></div>
+      <div><label>Alto (mm)</label><input type="number" step="0.5" data-k="labelH" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <div><label>Espacio entre columnas (mm)</label><input type="number" step="0.5" data-k="colGap" inputmode="decimal"></div>
+      <div><label>Espacio entre filas (mm)</label><input type="number" step="0.5" data-k="rowGap" inputmode="decimal"></div>
+    </div>
+    <div class="row">
+      <div><label>Ancho de impresión de la impresora (mm)</label><input type="number" step="1" data-k="printerMm" inputmode="decimal"></div>
+      <div><label>Alinear etiquetas</label><select data-k="align"><option value="left">Izquierda</option><option value="center">Centro</option><option value="right">Derecha</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Mover a la derecha (mm, − izquierda)</label><input type="number" step="0.5" data-k="offX" inputmode="decimal"></div>
+      <div><label>Mover hacia abajo (mm, − arriba)</label><input type="number" step="0.5" data-k="offY" inputmode="decimal"></div>
+    </div>
+    <label>Máximo de líneas del nombre</label>
+    <select data-k="nameLines"><option value="1">1 línea</option><option value="2">2 líneas</option><option value="3">3 líneas</option></select>
+    <label>Tamaño de letra del precio <b id="v_priceSize"></b></label><input type="range" data-k="priceSize" min="12" max="40">
+  </div>
+
+  <div class="card">
+    <h2>🔌 Envío a la impresora</h2>
+    <label>Avance de papel al final (puntos, 0 = ninguno)</label><input type="number" data-k="feed" min="0" max="255" inputmode="numeric">
+    <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-k="ff"> Enviar «saltar a la siguiente etiqueta» al terminar</label>
+    <label>Tamaño de paquete Bluetooth (bytes)</label>
+    <select data-k="chunk"><option value="20">20 (lento, más seguro)</option><option value="100">100</option><option value="180">180</option><option value="240">240</option></select>
+    <label>Servicio Bluetooth propio (solo si no conecta)</label><input type="text" data-k="svc" placeholder="UUID, opcional">
+  </div>
+
+  <div class="card">
+    <h2>📊 Google Sheets</h2>
+    <div class="muted">Guarda tus productos y el número que sigue en una hoja de Google, para usarlos desde el PC, el iPad y el celular.</div>
+    <label>Enlace de la aplicación web</label>
+    <input type="text" data-k="sheetUrl" placeholder="https://script.google.com/macros/s/…/exec" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <label>Clave</label>
+    <input type="text" data-k="sheetKey" placeholder="la misma que pusiste en el script" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div id="hojaEst" class="muted" style="margin-top:8px">Sin conectar</div>
+    <div class="row" style="margin-top:8px"><button class="b" id="hojaProbar">Conectar y traer</button><button class="b" id="hojaEnviar">Enviar todo a la hoja</button></div>
+  </div>
+
+  <div class="card">
+    <h2>🧹 Borrar todo</h2>
+    <button class="b" id="resetAj">Restaurar ajustes de fábrica</button>
+  </div>
+  <div class="muted" style="text-align:center">Mis Etiquetas · versión 1</div>
+</section>
+</main>
+
+<div id="bar"><button class="b p" id="imprimir">🖨️ Imprimir <span id="barN"></span></button><button class="b" id="detener" style="display:none;flex:.6">Detener</button></div>
+<div id="toast"></div>
+<div id="printSheet"></div>
+
+<script>
+// ============ utilidades ============
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+ set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('No pude guardar en este navegador')}}};
+const norm=s=>(s==null?'':String(s)).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const DPMM=203/25.4,mm=v=>Math.round(v*DPMM);
+const chunk=(a,n)=>{const r=[];for(let i=0;i<a.length;i+=n)r.push(a.slice(i,i+n));return r};
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)}
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+//<barcode>
+const C128=['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232'];
+const C128STOP='2331112';
+const expand=p=>[...p].map((n,i)=>(i%2?'0':'1').repeat(+n)).join('');
+function c128bits(text){
+  const codes=[];
+  if(/^\d{4,}$/.test(text)){
+    if(text.length%2===0){codes.push(105);for(let i=0;i<text.length;i+=2)codes.push(+text.substr(i,2))}
+    else{codes.push(104,text.charCodeAt(0)-32,99);for(let i=1;i<text.length;i+=2)codes.push(+text.substr(i,2))}
+  }else{
+    codes.push(104);
+    for(const ch of text){let c=ch.charCodeAt(0)-32;if(c<0||c>95)c=31;codes.push(c)}
+  }
+  let sum=codes[0];for(let i=1;i<codes.length;i++)sum+=codes[i]*i;
+  codes.push(sum%103);
+  return codes.map(c=>expand(C128[c])).join('')+expand(C128STOP);
+}
+const EL=['0001101','0011001','0010011','0111101','0100011','0110001','0101111','0111011','0110111','0001011'];
+const EG=['0100111','0110011','0011011','0100001','0011101','0111001','0000101','0010001','0001001','0010111'];
+const ER=['1110010','1100110','1101100','1000010','1011100','1001110','1010000','1000100','1001000','1110100'];
+const EPAR=['LLLLLL','LLGLGG','LLGGLG','LLGGGL','LGLLGG','LGGLLG','LGGGLL','LGLGLG','LGLGGL','LGGLGL'];
+function eanCheck(d){let s=0;for(let i=0;i<d.length;i++){s+=(i%2===0?3:1)*(+d[d.length-1-i])}return(10-s%10)%10}
+const eanOk=c=>eanCheck(c.slice(0,-1))===+c.slice(-1);
+function ean13bits(c){const p=EPAR[+c[0]];let b='101';for(let i=1;i<=6;i++)b+=(p[i-1]==='L'?EL:EG)[+c[i]];b+='01010';for(let i=7;i<13;i++)b+=ER[+c[i]];return b+'101'}
+function ean8bits(c){let b='101';for(let i=0;i<4;i++)b+=EL[+c[i]];b+='01010';for(let i=4;i<8;i++)b+=ER[+c[i]];return b+'101'}
+function barcode(code){
+  const t=String(code||'').trim()||'0';
+  if(/^\d{13}$/.test(t)&&eanOk(t))return{bits:ean13bits(t),type:'EAN-13'};
+  if(/^\d{12}$/.test(t)&&eanOk(t))return{bits:ean13bits('0'+t),type:'UPC-A'};
+  if(/^\d{8}$/.test(t)&&eanOk(t))return{bits:ean8bits(t),type:'EAN-8'};
+  return{bits:c128bits(t),type:'Code 128'};
+}
+//</barcode>
+
+// ============ ajustes ============
+const DEF={cols:2,copias:1,labelW:32,labelH:25,colGap:2,rowGap:3,printerMm:72,align:'center',offX:0,offY:0,
+ font:'sans',nameSize:20,codeSize:20,priceSize:24,nameLines:1,localSize:18,local:'',showLocal:true,barH:42,barW:92,dark:3,bold:true,showName:true,showCode:true,showPrice:false,
+ feed:0,ff:false,chunk:180,svc:'',sheetUrl:'',sheetKey:''};
+let S=Object.assign({},DEF,LS.get('etq.ajustes',{}));
+const saveS=()=>LS.set('etq.ajustes',S);
+const FONTS={sans:'Arial,Helvetica,sans-serif',redonda:'"Trebuchet MS","Avenir Next",sans-serif',serif:'Georgia,"Times New Roman",serif',maquina:'"Courier New",Courier,monospace',gruesa:'"Arial Black",Impact,sans-serif',cursiva:'"Snell Roundhand","Brush Script MT","Bradley Hand",cursive',globo:'"Chalkboard SE","Marker Felt","Comic Sans MS",cursive'};
+const THR=[100,125,150,175,205];
+
+// ============ productos ============
+let local=LS.get('etq.productos',[]);        // [{c,n,p}]
+let sitio=[];                                 // productos.json publicado junto a la página
+const saveP=()=>LS.set('etq.productos',local);
+function todos(){const m=new Map();sitio.forEach(x=>m.set(x.c,Object.assign({},x,{sitio:true})));local.forEach(x=>m.set(x.c,x));return[...m.values()]}
+async function cargarSitio(){
+  try{const r=await fetch('productos.json?'+Date.now(),{cache:'no-store'});if(!r.ok)return;
+    let j=await r.json();if(!Array.isArray(j))j=j.productos||[];
+    sitio=j.map(x=>({c:String(x.codigo??x.c??'').trim(),n:String(x.nombre??x.n??'').trim(),p:String(x.precio??x.p??'').trim()})).filter(x=>x.c);
+    renderProd();buscar();if(typeof renderAuto==='function')renderAuto();
+  }catch(e){}
+}
+
+// ============ dibujo de la etiqueta ============
+function wrap(ctx,text,maxW,font,maxLines){
+  ctx.font=font;const words=String(text).split(/\s+/);const lines=[];let cur='';
+  for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width<=maxW)cur=t;else{if(cur)lines.push(cur);cur=w}}
+  if(cur)lines.push(cur);
+  if(lines.length>maxLines){lines.length=maxLines;let l=lines[maxLines-1];while(l.length>1&&ctx.measureText(l+'…').width>maxW)l=l.slice(0,-1);lines[maxLines-1]=l+'…'}
+  return lines.map(l=>{while(l.length>1&&ctx.measureText(l).width>maxW)l=l.slice(0,-1);return l});
+}
+function drawLabel(ctx,x,y,W,H,it,s,border){
+  ctx.save();ctx.translate(x,y);
+  ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.textBaseline='top';ctx.textAlign='center';
+  const fam=FONTS[s.font]||FONTS.sans,bold=s.bold?'bold ':'',pad=Math.round(H*.05),cx=W/2;
+  const ns=+s.nameSize,cs=+s.codeSize,ps=+s.priceSize,thick=s.dark>=4;
+  const lines=(s.showName&&it.name)?wrap(ctx,it.name,W-2*pad,`${bold}${ns}px ${fam}`,+s.nameLines):[];
+  const ls=+s.localSize||18,locLines=(s.showLocal&&s.local)?wrap(ctx,s.local,W-2*pad,`bold ${ls}px ${fam}`,1):[];
+  const locH=locLines.length?Math.round(ls*1.12):0;
+  const lh=Math.round(ns*1.12),nameH=lines.length*lh;
+  const codeH=s.showCode?cs+2:0,priceH=(s.showPrice&&it.price)?ps+2:0;
+  const bc=barcode(it.code),Q=7;
+  const m=Math.max(1,Math.floor(W*s.barW/100/(bc.bits.length+Q*2)));
+  const bw=bc.bits.length*m;
+  const fixed=locH+nameH+codeH+priceH+(locH?3:0)+(nameH?3:0)+(codeH?2:0)+(priceH?2:0);
+  const bh=Math.max(18,Math.min(Math.round(H*s.barH/100),H-2*pad-fixed));
+  const total=fixed+bh;
+  let yy=Math.max(pad,Math.round((H-total)/2));
+  if(locH){ctx.font=`bold ${ls}px ${fam}`;ctx.fillText(locLines[0],cx,yy);if(thick){ctx.lineWidth=1;ctx.strokeText(locLines[0],cx,yy)}yy+=locH+3}
+  if(nameH){ctx.font=`${bold}${ns}px ${fam}`;lines.forEach((l,i)=>{ctx.fillText(l,cx,yy+i*lh);if(thick){ctx.lineWidth=1;ctx.strokeText(l,cx,yy+i*lh)}});yy+=nameH+3}
+  const x0=Math.round((W-bw)/2);
+  for(let i=0;i<bc.bits.length;){if(bc.bits[i]==='1'){let j=i;while(j<bc.bits.length&&bc.bits[j]==='1')j++;ctx.fillRect(x0+i*m,yy,(j-i)*m,bh);i=j}else i++}
+  yy+=bh;
+  if(codeH){yy+=2;ctx.font=`${bold}${cs}px ${fam}`;ctx.fillText(String(it.code),cx,yy);if(thick)ctx.strokeText(String(it.code),cx,yy);yy+=cs}
+  if(priceH){yy+=2;ctx.font=`bold ${ps}px ${fam}`;ctx.fillText(it.price,cx,yy)}
+  if(border){ctx.lineWidth=2;ctx.strokeRect(1,1,W-2,H-2)}
+  ctx.restore();return bc.type;
+}
+function renderRow(items,s,o={}){
+  const W=mm(s.labelW),H=mm(s.labelH),cg=mm(s.colGap),rg=mm(s.rowGap);
+  const total=s.cols*W+(s.cols-1)*cg;
+  const pw=o.tight?total:Math.ceil(mm(s.printerMm)/8)*8;
+  let x0=o.tight?0:(s.align==='left'?0:s.align==='right'?pw-total:Math.round((pw-total)/2))+mm(s.offX);
+  const c=document.createElement('canvas');c.width=pw;c.height=o.tight?H:H+rg;
+  const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);
+  let type='';
+  items.forEach((it,i)=>{if(it)type=drawLabel(ctx,x0+i*(W+cg),o.tight?0:mm(s.offY),W,H,it,s,o.border)});
+  c.dataset.type=type;c.dataset.over=(!o.tight&&total>pw)?'1':'';
+  return c;
+}
+function rasterCmd(c,s){
+  const w=c.width,h=c.height,wb=w/8,px=c.getContext('2d').getImageData(0,0,w,h).data,thr=THR[s.dark-1]||150;
+  const d=new Uint8Array(8+wb*h);d.set([0x1D,0x76,0x30,0x00,wb&255,wb>>8,h&255,h>>8]);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=(y*w+x)*4;const g=.299*px[i]+.587*px[i+1]+.114*px[i+2];if(g<thr)d[8+y*wb+(x>>3)]|=0x80>>(x&7)}
+  return d;
+}
+
+// ============ lista por imprimir ============
+let cola=LS.get('etq.cola',[]);
+const saveC=()=>LS.set('etq.cola',cola);
+const rid=()=>Math.random().toString(36).slice(2,9);
+const seqCode=(it,i)=>(it.prefix||'')+String(+it.start+i).padStart(+it.pad||0,'0');
+function expandQueue(){
+  const out=[];
+  cola.forEach(it=>{
+    if(it.k==='p'){for(let i=0;i<it.copias;i++)out.push({code:it.code,name:it.name,price:it.price})}
+    else for(let n=0;n<it.count;n++)for(let i=0;i<it.copias;i++)out.push({code:seqCode(it,n),name:it.text,price:''});
+  });
+  return out;
+}
+function renderCola(){
+  const box=$('#cola');
+  if(!cola.length){box.innerHTML='<div class="muted">Aún no hay nada. Busca un producto arriba o crea consecutivos 💗</div>'}
+  else box.innerHTML=cola.map(it=>{
+    const t=it.k==='p'?`<div><b>${esc(it.name||'(sin nombre)')}</b></div><small>${esc(it.code)}${it.price?' · '+esc(it.price):''}</small>`
+      :`<div><b>Consecutivo ${esc(seqCode(it,0))} → ${esc(seqCode(it,it.count-1))}</b></div><small>${it.count} códigos${it.text?' · '+esc(it.text):''}</small>`;
+    return`<div class="item" data-id="${it.id}"><div class="t">${t}</div><div class="step"><button data-a="-">−</button><span>${it.copias}</span><button data-a="+">+</button></div><button class="b s" data-a="x">✕</button></div>`}).join('');
+  const n=expandQueue().length;
+  $('#totalEt').textContent=n?`(${n} etiquetas)`:'';$('#barN').textContent=n?`(${n})`:'';
+  preview();
+}
+$('#cola').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const id=b.closest('.item').dataset.id,it=cola.find(x=>x.id===id);if(!it)return;
+  if(b.dataset.a==='+')it.copias++;else if(b.dataset.a==='-')it.copias=Math.max(1,it.copias-1);else cola=cola.filter(x=>x!==it);
+  saveC();renderCola();
+});
+$('#vaciar').onclick=()=>{if(cola.length&&confirm('¿Vaciar la lista?')){cola=[];saveC();renderCola()}};
+function addProducto(p){
+  const ex=cola.find(x=>x.k==='p'&&x.code===p.c&&x.name===p.n);
+  if(ex)ex.copias+=+S.copias||1;else cola.push({id:rid(),k:'p',code:p.c,name:p.n,price:p.p||'',copias:+S.copias||1});
+  saveC();renderCola();toast('Agregada 💗');
+}
+
+// ============ búsqueda ============
+let lastRes=[];
+function buscar(){
+  const q=$('#q').value.trim(),box=$('#res');
+  if(!q){box.innerHTML='';lastRes=[];return}
+  const terms=norm(q).split(/\s+/).filter(Boolean);
+  lastRes=todos().filter(p=>{const h=norm(p.n+' '+p.c);return terms.every(t=>h.includes(t))}).slice(0,30);
+  box.innerHTML=lastRes.map((p,i)=>`<button class="pick" data-i="${i}">${esc(p.n||'(sin nombre)')}<small>${esc(p.c)}${p.p?' · '+esc(p.p):''}</small></button>`).join('')
+    +`<button class="pick" data-i="x">➕ Usar «${esc(q)}» como código sin guardarlo</button>`;
+}
+$('#q').addEventListener('input',buscar);
+$('#res').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.i==='x')addProducto({c:$('#q').value.trim(),n:'',p:''});else addProducto(lastRes[+b.dataset.i]);
+  $('#q').value='';buscar();
+});
+
+// ============ consecutivos ============
+const seqMap=()=>LS.get('etq.seq',{});
+function seqInfo(){
+  const pre=$('#sPre').value,nx=seqMap()['p:'+pre];
+  $('#sHint').textContent=nx!=null?`Último impreso con este prefijo: hasta el ${nx-1}. El siguiente sería ${nx}.`:'Todavía no has impreso consecutivos con este prefijo.';
+  const ini=+$('#sIni').value,can=Math.min(+$('#sCan').value||0,20000),pad=+$('#sPad').value||0;
+  let dup=0;
+  if(can>0&&!isNaN(ini)){const set=new Set(todos().map(p=>p.c));for(let i=0;i<can;i++)if(set.has(pre+String(ini+i).padStart(pad,'0')))dup++}
+  let w='';
+  if(dup)w+=`<div class="warn">⚠️ ${dup} de estos códigos ya existen en tus productos. Cambia el número inicial para no cruzarlos con el inventario.</div>`;
+  if(nx!=null&&ini<nx)w+=`<div class="warn">⚠️ Ya imprimiste códigos desde el ${ini} hasta el ${nx-1} con este prefijo. Podrías repetirlos.</div>`;
+  $('#sWarn').innerHTML=w;
+}
+['sPre','sIni','sCan','sPad'].forEach(i=>$('#'+i).addEventListener('input',seqInfo));
+$('#sUsar').onclick=()=>{const nx=seqMap()['p:'+$('#sPre').value];if(nx!=null){$('#sIni').value=nx;seqInfo()}else toast('No hay un número anterior guardado')};
+$('#sAdd').onclick=()=>{
+  const start=+$('#sIni').value,count=Math.floor(+$('#sCan').value);
+  if(isNaN(start)||!(count>0))return toast('Revisa el número inicial y la cantidad');
+  if(count>20000)return toast('Máximo 20.000 de una vez');
+  cola.push({id:rid(),k:'s',prefix:$('#sPre').value,start,count,pad:+$('#sPad').value||0,text:$('#sTxt').value.trim(),copias:1});
+  saveC();renderCola();toast('Consecutivos añadidos 💗');
+};
+function recordSeq(){
+  const m=seqMap();
+  cola.filter(x=>x.k==='s').forEach(it=>{const k='p:'+(it.prefix||'');m[k]=Math.max(m[k]||0,+it.start+it.count)});
+  LS.set('etq.seq',m);seqInfo();
+}
+
+// ============ vista previa ============
+let pt;function preview(){clearTimeout(pt);pt=setTimeout(doPreview,80)}
+function doPreview(){
+  const all=expandQueue();
+  const items=all.length?all.slice(0,S.cols):[{code:'100000123',name:'Nombre del producto',price:'$ 12.000'}];
+  while(items.length<S.cols)items.push(null);
+  const c=renderRow(items,S,{border:true}),p=$('#prev');
+  p.width=c.width;p.height=c.height;p.getContext('2d').drawImage(c,0,0);
+  $('#prevNote').textContent=(all.length?'':'Ejemplo · ')+'Código: '+(c.dataset.type||'—')+(c.dataset.over?' · ⚠️ Las etiquetas son más anchas que el papel: baja las columnas o el tamaño.':'');
+}
+
+// ============ ajustes: enlazar controles ============
+function bind(){
+  $$('[data-k]').forEach(el=>{
+    const k=el.dataset.k;
+    if(el.type==='checkbox')el.checked=!!S[k];else el.value=S[k];
+    const out=$('#v_'+k);if(out)out.textContent=S[k];
+    el.addEventListener('input',()=>{
+      let v=el.type==='checkbox'?el.checked:el.value;
+      if(el.type==='number'||el.type==='range'||['chunk','nameLines'].includes(k)){v=+v;if(isNaN(v))return}
+      S[k]=v;saveS();const o=$('#v_'+k);if(o)o.textContent=v;preview();
+    });
+  });
+  $$('[data-seg=cols] button').forEach(b=>{
+    b.classList.toggle('on',+b.dataset.v===+S.cols);
+    b.onclick=()=>{S.cols=+b.dataset.v;saveS();$$('[data-seg=cols] button').forEach(x=>x.classList.toggle('on',x===b));preview()};
+  });
+}
+$('#resetAj').onclick=()=>{if(confirm('¿Restaurar los ajustes de fábrica? Tus productos no se borran.')){S=Object.assign({},DEF);saveS();bind();preview()}};
+
+// ============ pestañas ============
+$$('#tabs button').forEach(b=>b.onclick=()=>{
+  $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $$('section').forEach(s=>s.classList.toggle('on',s.id==='t-'+b.dataset.t));
+  $('#bar').style.display=b.dataset.t==='print'?'flex':'none';
+  if(b.dataset.t==='print')preview();
+});
+
+// ============ pantalla Productos ============
+function renderProd(){
+  const q=norm($('#pBuscar').value),terms=q.split(/\s+/).filter(Boolean);
+  const all=todos().sort((a,b)=>norm(a.n).localeCompare(norm(b.n)));
+  const f=all.filter(p=>terms.every(t=>norm(p.n+' '+p.c).includes(t)));
+  $('#pCount').textContent=`(${all.length})`;
+  $('#pLista').innerHTML=f.slice(0,100).map(p=>`<div class="item" data-c="${esc(p.c)}"><div class="t"><div><b>${esc(p.n||'(sin nombre)')}</b></div><small>${esc(p.c)}${p.p?' · '+esc(p.p):''}${p.sitio?' · 🌐 compartido':''}</small></div><button class="b s" data-a="add">🖨️</button><button class="b s" data-a="ed">✏️</button>${p.sitio?'':'<button class="b s" data-a="del">✕</button>'}</div>`).join('')
+    +(f.length>100?`<div class="muted">Mostrando 100 de ${f.length}. Usa el buscador.</div>`:'')||'<div class="muted">No hay productos todavía.</div>';
+}
+$('#pBuscar').addEventListener('input',renderProd);
+$('#pLista').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const c=b.closest('.item').dataset.c,p=todos().find(x=>x.c===c);if(!p)return;
+  if(b.dataset.a==='add'){addProducto(p)}
+  else if(b.dataset.a==='ed'){$('#pC').value=p.c;$('#pN').value=p.n;$('#pP').value=p.p||'';scrollTo({top:0,behavior:'smooth'})}
+  else if(confirm('¿Borrar «'+(p.n||p.c)+'»?')){local=local.filter(x=>x.c!==c);saveP();renderProd();borrarEnHoja(c)}
+});
+$('#pGuardar').onclick=()=>{
+  const c=$('#pC').value.trim(),n=$('#pN').value.trim(),p=$('#pP').value.trim();
+  if(!c)return toast('Falta el código');
+  const i=local.findIndex(x=>x.c===c);if(i>=0)local[i]={c,n,p};else local.push({c,n,p});
+  saveP();renderProd();buscar();$('#pC').value=$('#pN').value=$('#pP').value='';toast('Guardado 💗');enviarProductos([{c,n,p}]);
+};
+$('#pLimpiar').onclick=()=>{$('#pC').value=$('#pN').value=$('#pP').value=''};
+
+// importar CSV / pegado
+function parseCSV(t){
+  t=t.replace(/^\uFEFF/,'');const first=t.split(/\r?\n/)[0]||'';
+  const d=[',',';','\t'].map(x=>[x,first.split(x).length]).sort((a,b)=>b[1]-a[1])[0][0];
+  const rows=[];let r=[],f='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch==='"')q=true;
+    else if(ch===d){r.push(f);f=''}
+    else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(f);f='';if(r.some(x=>x.trim()))rows.push(r);r=[]}
+    else f+=ch}
+  r.push(f);if(r.some(x=>x.trim()))rows.push(r);return rows;
+}
+let impRows=[];
+function mostrarMapa(rows){
+  impRows=rows;if(!rows.length)return toast('No encontré filas');
+  const hdr=rows[0].some(x=>/cod|barra|nombre|produc|descrip|precio|ref|art/i.test(x));
+  const cols=rows[0].map((x,i)=>hdr?(x||'Columna '+(i+1)):'Columna '+(i+1));
+  const guess=re=>{const i=rows[0].findIndex(x=>re.test(x));return i};
+  let ic=hdr?guess(/cod|barra|ref/i):0,inn=hdr?guess(/nombre|produc|descrip|art/i):1,ip=hdr?guess(/precio|valor/i):-1;
+  if(ic<0)ic=0;if(inn<0)inn=Math.min(1,cols.length-1);
+  const opt=(sel,none)=>(none?'<option value="-1">— ninguna —</option>':'')+cols.map((c,i)=>`<option value="${i}" ${i===sel?'selected':''}>${esc(c)}</option>`).join('');
+  $('#pMap').innerHTML=`<div class="card" style="margin-top:10px;background:#fff7fb"><label>Columna del código</label><select id="mC">${opt(ic)}</select><label>Columna del nombre</label><select id="mN">${opt(inn)}</select><label>Columna del precio</label><select id="mP">${opt(ip,true)}</select><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mH" ${hdr?'checked':''}> La primera fila es de títulos</label><div class="muted">Hay ${rows.length-(hdr?1:0)} filas. Ejemplo: ${esc(rows[hdr?1:0]?.join(' | ')||'')}</div><button class="b p" id="mGo" style="margin-top:8px">Importar</button></div>`;
+  $('#mGo').onclick=()=>{
+    const c=+$('#mC').value,n=+$('#mN').value,p=+$('#mP').value,skip=$('#mH').checked?1:0;let add=0,upd=0;
+    impRows.slice(skip).forEach(r=>{const code=(r[c]||'').trim();if(!code)return;const o={c:code,n:(r[n]||'').trim(),p:p>=0?(r[p]||'').trim():''};
+      const i=local.findIndex(x=>x.c===code);if(i>=0){local[i]=Object.assign(local[i],o.n?{n:o.n}:{},o.p?{p:o.p}:{});upd++}else{local.push(o);add++}});
+    saveP();renderProd();buscar();$('#pMap').innerHTML='';enviarProductos(local);toast(`Listo: ${add} nuevos, ${upd} actualizados 💗`);
+  };
+}
+$('#pLeer').onclick=()=>{const t=$('#pPaste').value;if(t.trim())mostrarMapa(parseCSV(t));else toast('Elige un archivo o pega las filas')};
+$('#pFile').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;const buf=await f.arrayBuffer();let t;
+  try{t=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(_){t=new TextDecoder('windows-1252').decode(buf)}
+  mostrarMapa(parseCSV(t));
+};
+
+// exportar / respaldo
+function bajar(nombre,texto,tipo){
+  const blob=new Blob([texto],{type:tipo||'application/json'});
+  try{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}catch(e){toast('No pude descargar; usa «Copiar»')}
+}
+const respaldo=()=>JSON.stringify({version:1,productos:local,ajustes:S,seq:seqMap()},null,1);
+$('#expBack').onclick=()=>bajar('copia-etiquetas.json',respaldo());
+$('#copyBack').onclick=async()=>{try{await navigator.clipboard.writeText(respaldo());toast('Copia copiada 💗')}catch(e){toast('No pude copiar')}};
+$('#expProd').onclick=()=>bajar('productos.json',JSON.stringify(todos().map(p=>({codigo:p.c,nombre:p.n,precio:p.p||''})),null,1));
+$('#expCsv').onclick=()=>bajar('productos.csv','codigo;nombre;precio\n'+todos().map(p=>[p.c,p.n,p.p||''].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\n'),'text/csv');
+$('#impBack').onchange=async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const j=JSON.parse(await f.text());
+    if(Array.isArray(j)){j.forEach(x=>{const c=String(x.codigo??x.c??'').trim();if(c&&!local.find(y=>y.c===c))local.push({c,n:String(x.nombre??x.n??''),p:String(x.precio??x.p??'')})})}
+    else{if(Array.isArray(j.productos))local=j.productos;if(j.ajustes)S=Object.assign({},DEF,j.ajustes);if(j.seq)LS.set('etq.seq',j.seq)}
+    saveP();saveS();bind();renderProd();renderCola();toast('Copia restaurada 💗')}
+  catch(err){toast('Ese archivo no parece una copia válida')}
+};
+
+// ============ Bluetooth ============
+const SERV=['000018f0-0000-1000-8000-00805f9b34fb','0000ff00-0000-1000-8000-00805f9b34fb','0000ffe0-0000-1000-8000-00805f9b34fb','0000fff0-0000-1000-8000-00805f9b34fb','0000fee7-0000-1000-8000-00805f9b34fb','0000ae30-0000-1000-8000-00805f9b34fb','0000ffb0-0000-1000-8000-00805f9b34fb','e7810a71-73ae-499d-8c15-faa9aef0c3f2','49535343-fe7d-4ae5-8fa9-9fafd205e455','0000180a-0000-1000-8000-00805f9b34fb','00001800-0000-1000-8000-00805f9b34fb'];
+let dev=null,ch=null,stop=false;
+function log(m){const l=$('#log');l.style.display='block';l.textContent+=m+'\n';l.scrollTop=l.scrollHeight}
+function estado(t,ok){const e=$('#estado');e.textContent=t;e.classList.toggle('ok',!!ok)}
+async function conectar(todosEq){
+  if(!navigator.bluetooth){toast('Abre esta página en Bluefy para usar Bluetooth');return false}
+  try{
+    const sv=SERV.slice();if(S.svc&&/^[0-9a-f-]{4,36}$/i.test(S.svc.trim()))sv.push(S.svc.trim().toLowerCase());
+    dev=await navigator.bluetooth.requestDevice(todosEq?{acceptAllDevices:true,optionalServices:sv}:{filters:[{namePrefix:'A300'},{namePrefix:'Star'},{namePrefix:'STAR'}],optionalServices:sv});
+    dev.addEventListener('gattserverdisconnected',()=>{ch=null;estado('Sin impresora')});
+    return await abrirCanal();
+  }catch(e){if(e.name!=='NotFoundError')log('Error: '+e.message);toast(e.name==='NotFoundError'?'No elegiste ninguna impresora':'No pude conectar');return false}
+}
+async function abrirCanal(){
+  estado('Conectando…');
+  const srv=await dev.gatt.connect();const svs=await srv.getPrimaryServices();let found=null;
+  for(const s of svs){log('Servicio '+s.uuid);const cs=await s.getCharacteristics();
+    for(const c of cs){const p=Object.keys(c.properties).filter(k=>c.properties[k]).join(',');log('  '+c.uuid+' ['+p+']');
+      if(!found&&(c.properties.writeWithoutResponse||c.properties.write))found=c}}
+  if(!found){estado('Sin canal');toast('Conecté, pero no encontré dónde escribir. Mira el registro.');return false}
+  ch=found;estado((dev.name||'Impresora')+' ✓',true);toast('Impresora lista 💗');return true;
+}
+async function asegurar(){
+  if(ch&&dev&&dev.gatt.connected)return true;
+  if(dev){try{return await abrirCanal()}catch(e){log('Reconexión falló: '+e.message)}}
+  return await conectar(false);
+}
+let packet=0;
+async function enviar(bytes){
+  let size=packet||+S.chunk||180;
+  for(let i=0;i<bytes.length;){
+    if(stop)throw new Error('detenido');
+    const part=bytes.slice(i,i+size);
+    try{if(ch.properties.writeWithoutResponse)await ch.writeValueWithoutResponse(part);else await ch.writeValue(part);i+=part.length;await sleep(6)}
+    catch(e){if(size>20){size=Math.max(20,size>>1);packet=size;log('Paquete más pequeño: '+size);await sleep(60)}else throw e}
+  }
+}
+function progreso(a,b){const p=$('#prog');p.style.display=b?'block':'none';p.firstElementChild.style.width=(b?100*a/b:0)+'%'}
+async function trabajo(rowsFn,total){
+  if(!await asegurar())return;
+  stop=false;$('#imprimir').disabled=true;$('#detener').style.display='block';
+  try{
+    await enviar(new Uint8Array([0x1B,0x40]));
+    for(let i=0;i<total;i++){await enviar(rasterCmd(rowsFn(i),S));progreso(i+1,total)}
+    if(+S.feed>0)await enviar(new Uint8Array([0x1B,0x4A,Math.min(255,+S.feed)]));
+    if(S.ff)await enviar(new Uint8Array([0x0C]));
+    toast('Listo 💗');return true;
+  }catch(e){toast(e.message==='detenido'?'Impresión detenida':'Se cortó la conexión: '+e.message);log('Error: '+e.message)}
+  finally{$('#imprimir').disabled=false;$('#detener').style.display='none';setTimeout(()=>progreso(0,0),1200)}
+}
+$('#conectar').onclick=()=>conectar(false);
+$('#conectarTodos').onclick=()=>conectar(true);
+$('#detener').onclick=()=>{stop=true};
+$('#imprimir').onclick=async()=>{
+  const labels=expandQueue();if(!labels.length)return toast('La lista está vacía');
+  const rows=chunk(labels,S.cols);
+  const ok=await trabajo(i=>renderRow(rows[i].concat(Array(S.cols-rows[i].length).fill(null)),S),rows.length);
+  if(ok)recordSeq();
+};
+$('#prueba').onclick=async()=>{
+  const it={code:'100000123',name:'Prueba',price:'$ 1.000'};
+  await trabajo(()=>renderRow(Array(S.cols).fill(it),S,{border:true}),2);
+};
+$('#sistema').onclick=()=>{
+  const labels=expandQueue();if(!labels.length)return toast('La lista está vacía');
+  const rows=chunk(labels,S.cols),W=S.labelW,cg=S.colGap,tot=S.cols*W+(S.cols-1)*cg;
+  const sheet=$('#printSheet');sheet.innerHTML='';
+  rows.forEach(r=>{const c=renderRow(r.concat(Array(S.cols-r.length).fill(null)),S,{tight:true});const im=new Image();im.src=c.toDataURL('image/png');im.style.width=tot+'mm';im.style.height=S.labelH+'mm';sheet.appendChild(im)});
+  let st=$('#pageStyle');if(!st){st=document.createElement('style');st.id='pageStyle';document.head.appendChild(st)}
+  st.textContent=`@page{size:${tot}mm ${S.labelH}mm;margin:0}`;
+  setTimeout(()=>{window.print();recordSeq()},300);
+};
+
+// ============ etiqueta nueva automática ============
+let AUTO=Object.assign({pre:'',next:1,pad:6},LS.get('etq.auto',{}));
+const saveA=()=>LS.set('etq.auto',AUTO);
+const autoCode=()=>AUTO.pre+String(AUTO.next).padStart(+AUTO.pad||0,'0');
+function renderAuto(){
+  const set=new Set(todos().map(p=>p.c));let g=0;
+  while(set.has(autoCode())&&g++<100000)AUTO.next++;
+  saveA();
+  $('#nSig').textContent=autoCode();
+  if(document.activeElement!==$('#nPre'))$('#nPre').value=AUTO.pre;
+  if(document.activeElement!==$('#nNum'))$('#nNum').value=AUTO.next;
+  if(document.activeElement!==$('#nPad'))$('#nPad').value=AUTO.pad;
+}
+$('#nPre').addEventListener('input',e=>{AUTO.pre=e.target.value;saveA();$('#nSig').textContent=autoCode()});
+$('#nNum').addEventListener('input',e=>{const v=Math.floor(+e.target.value);if(v>=0){AUTO.next=v;saveA();$('#nSig').textContent=autoCode()}});
+$('#nPad').addEventListener('input',e=>{const v=Math.floor(+e.target.value);if(v>=0){AUTO.pad=v;saveA();$('#nSig').textContent=autoCode()}});
+async function crearNueva(){
+  const name=$('#nNom').value.trim();
+  if(!name)return toast('Escribe el nombre del producto');
+  if(!S.local){
+    const l=(prompt('¿Cómo se llama tu local? Saldrá en la fila de arriba de todas las etiquetas.')||'').trim();
+    if(l){S.local=l;S.showLocal=true;saveS();const el=document.querySelector('[data-k=local]');if(el)el.value=l;const ck=document.querySelector('[data-k=showLocal]');if(ck)ck.checked=true}
+  }
+  if(hojaOn()){
+    try{
+      hojaEstado('Guardando…');
+      const j=await hoja('nuevo',{nombre:name,precio:'',prefijo:AUTO.pre,digitos:AUTO.pad,inicio:AUTO.next,local:S.local||''});
+      const p={c:String(j.codigo),n:name,p:''};
+      local=local.filter(x=>x.c!==p.c);local.push(p);saveP();
+      AUTO.next=+j.siguiente;saveA();
+      addProducto(p);hojaEstado('Guardado en la hoja ✓',true);
+      $('#nNom').value='';renderAuto();renderProd();$('#nNom').focus();
+      return;
+    }catch(e){hojaEstado('Sin conexión con la hoja');toast('No pude hablar con la hoja; se guarda solo aquí')}
+  }
+  renderAuto();
+  const code=autoCode();
+  local.push({c:code,n:name,p:''});saveP();
+  AUTO.next++;saveA();
+  addProducto({c:code,n:name,p:''});
+  $('#nNom').value='';renderAuto();renderProd();$('#nNom').focus();
+}
+$('#nAdd').onclick=crearNueva;
+$('#nNom').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();crearNueva()}});
+
+// ============ Google Sheets ============
+const hojaOn=()=>/^https:\/\/script\.google\.com\//.test((S.sheetUrl||'').trim());
+function hojaEstado(t,ok){const e=$('#hojaEst');if(e){e.textContent=t;e.style.color=ok?'#1c8a4b':'#a07088'}}
+async function hoja(action,data){
+  const r=await fetch(S.sheetUrl.trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,clave:S.sheetKey||''},data||{}))});
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.error||'Error desconocido');
+  return j;
+}
+const cfgObj=()=>{const c={siguiente:AUTO.next,prefijo:AUTO.pre,digitos:AUTO.pad};if(S.local)c.local=S.local;return c};
+async function traerHoja(silencioso){
+  if(!hojaOn()){if(!silencioso)toast('Primero pega el enlace de la hoja en Ajustes');return}
+  try{
+    hojaEstado('Conectando…');
+    const j=await hoja('listar'),arr=j.productos||[],cf=j.config||{};
+    const m=new Map(local.map(p=>[p.c,p]));
+    arr.forEach(x=>{const c=String(x.codigo).trim();if(c)m.set(c,{c,n:String(x.nombre||''),p:String(x.precio||'')})});
+    local=[...m.values()];saveP();
+    if(cf.local&&!S.local){S.local=String(cf.local);saveS()}
+    // Diseño de la etiqueta que el administrador guardó desde el portal
+    if(cf.diseno){try{const dz=JSON.parse(cf.diseno);['cols','labelW','labelH','colGap','rowGap','printerMm','align','offX','offY','font','nameSize','codeSize','priceSize','nameLines','localSize','local','showLocal','barH','barW','dark','bold','showName','showCode','showPrice'].forEach(k=>{if(dz[k]!==undefined)S[k]=dz[k]});saveS()}catch(e){}}
+    if(cf.siguiente!==undefined&&cf.siguiente!==''&&+cf.siguiente>AUTO.next)AUTO.next=+cf.siguiente;
+    if(cf.prefijo!==undefined)AUTO.pre=String(cf.prefijo);
+    if(+cf.digitos>0)AUTO.pad=+cf.digitos;
+    saveA();bind();renderProd();buscar();renderAuto();preview();
+    hojaEstado('Conectada ✓ · '+arr.length+' productos en la hoja',true);
+    if(!silencioso)toast('Listo, traje lo de la hoja 💗');
+  }catch(e){hojaEstado('Sin conexión con la hoja');if(!silencioso)toast('No pude conectar: '+e.message)}
+}
+async function enviarProductos(list){
+  if(!hojaOn()||!list.length)return;
+  try{await hoja('guardar',{productos:list.map(p=>({codigo:p.c,nombre:p.n,precio:p.p||''}))});await hoja('config',{config:cfgObj()});hojaEstado('Guardado en la hoja ✓',true)}
+  catch(e){hojaEstado('Pendiente de enviar');toast('No se guardó en la hoja. Usa «Enviar todo a la hoja» más tarde.')}
+}
+async function borrarEnHoja(c){if(!hojaOn())return;try{await hoja('borrar',{codigo:c})}catch(e){toast('No pude borrarlo en la hoja')}}
+let cdt;function cfgDeb(){clearTimeout(cdt);cdt=setTimeout(()=>{if(hojaOn())hoja('config',{config:cfgObj()}).catch(()=>{})},1200)}
+['nPre','nNum','nPad'].forEach(i=>$('#'+i).addEventListener('input',cfgDeb));
+document.querySelector('[data-k=local]').addEventListener('input',cfgDeb);
+$('#hojaProbar').onclick=()=>traerHoja(false);
+$('#hojaEnviar').onclick=async()=>{if(!hojaOn())return toast('Primero pega el enlace de la hoja');await enviarProductos(local);toast('Enviado a la hoja 💗')};
+
+// ============ arranque ============
+bind();renderCola();renderProd();seqInfo();renderAuto();cargarSitio();traerHoja(true);
+if(!navigator.bluetooth)estado('Sin Bluetooth aquí');
+</script>
+</body>
+</html>
