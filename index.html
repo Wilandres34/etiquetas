@@ -609,7 +609,6 @@ async function trabajo(rowsFn,total){
   stop=false;$('#imprimir').disabled=true;$('#detener').style.display='block';
   try{
     await enviar(new Uint8Array([0x1B,0x40]));
-    await enviar(new Uint8Array([0x1B,0x37,11,[60,90,130,180,240][(+S.dark||3)-1]||130,2]));
     for(let i=0;i<total;i++){await enviar(rasterCmd(rowsFn(i),S));if(S.salto==='gap')await enviar(new Uint8Array([0x1D,0x0C]));progreso(i+1,total)}
     if(+S.feed>0)await enviar(new Uint8Array([0x1B,0x4A,Math.min(255,+S.feed)]));
     if(S.ff)await enviar(new Uint8Array([0x0C]));
