@@ -293,6 +293,7 @@ const DEF={cols:1,copias:1,labelW:32,labelH:25,colGap:2,rowGap:2,printerMm:48,sa
  font:'sans',nameSize:20,codeSize:20,priceSize:24,nameLines:1,localSize:18,local:'',showLocal:true,barH:42,barW:92,dark:3,bold:true,showName:true,showCode:true,showPrice:false,
  feed:0,ff:false,chunk:180,svc:'',sheetUrl:'',sheetKey:''};
 let S=Object.assign({},DEF,LS.get('etq.ajustes',{}));
+if(!LS.get('etq.v3',false)){S.dark=5;LS.set('etq.ajustes',S);LS.set('etq.v3',true)}
 if(!LS.get('etq.v2',false)){['cols','labelW','labelH','colGap','rowGap','printerMm','align','offX','offY','salto'].forEach(k=>S[k]=DEF[k]);LS.set('etq.ajustes',S);LS.set('etq.v2',true)}
 const saveS=()=>LS.set('etq.ajustes',S);
 const FONTS={sans:'Arial,Helvetica,sans-serif',redonda:'"Trebuchet MS","Avenir Next",sans-serif',serif:'Georgia,"Times New Roman",serif',maquina:'"Courier New",Courier,monospace',gruesa:'"Arial Black",Impact,sans-serif',cursiva:'"Snell Roundhand","Brush Script MT","Bradley Hand",cursive',globo:'"Chalkboard SE","Marker Felt","Comic Sans MS",cursive'};
@@ -608,6 +609,7 @@ async function trabajo(rowsFn,total){
   stop=false;$('#imprimir').disabled=true;$('#detener').style.display='block';
   try{
     await enviar(new Uint8Array([0x1B,0x40]));
+    await enviar(new Uint8Array([0x1B,0x37,11,[60,90,130,180,240][(+S.dark||3)-1]||130,2]));
     for(let i=0;i<total;i++){await enviar(rasterCmd(rowsFn(i),S));if(S.salto==='gap')await enviar(new Uint8Array([0x1D,0x0C]));progreso(i+1,total)}
     if(+S.feed>0)await enviar(new Uint8Array([0x1B,0x4A,Math.min(255,+S.feed)]));
     if(S.ff)await enviar(new Uint8Array([0x0C]));
@@ -654,7 +656,7 @@ $('#calibOk').onclick=()=>{
   preview();$('#calib').style.display='none';toast('Listo. Ahora toca «Imprimir prueba» 💗');
 };
 $('#prueba').onclick=async()=>{
-  const it={code:'100000123',name:'Prueba',price:'$ 1.000'};
+  const it={code:'000123',name:'Prueba',price:'$ 1.000'};
   await trabajo(()=>renderRow(Array(S.cols).fill(it),S,{border:true}),2);
 };
 $('#sistema').onclick=()=>{
@@ -732,7 +734,7 @@ async function traerHoja(silencioso){
     local=[...m.values()];saveP();
     if(cf.local&&!S.local){S.local=String(cf.local);saveS()}
     // Diseño de la etiqueta que el administrador guardó desde el portal
-    if(cf.diseno){try{const dz=JSON.parse(cf.diseno);['font','nameSize','codeSize','priceSize','nameLines','localSize','local','showLocal','barH','barW','dark','bold','showName','showCode','showPrice'].forEach(k=>{if(dz[k]!==undefined)S[k]=dz[k]});saveS()}catch(e){}}
+    if(cf.diseno){try{const dz=JSON.parse(cf.diseno);['font','nameSize','codeSize','priceSize','nameLines','localSize','local','showLocal','barH','barW','bold','showName','showCode','showPrice'].forEach(k=>{if(dz[k]!==undefined)S[k]=dz[k]});saveS()}catch(e){}}
     if(cf.siguiente!==undefined&&cf.siguiente!==''&&+cf.siguiente>AUTO.next)AUTO.next=+cf.siguiente;
     if(cf.prefijo!==undefined)AUTO.pre=String(cf.prefijo);
     if(+cf.digitos>0)AUTO.pad=+cf.digitos;
