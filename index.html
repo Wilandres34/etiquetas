@@ -134,6 +134,12 @@ canvas#prev{width:100%;border:2px dashed var(--rosa);border-radius:10px;backgrou
     <h2>🖨️ Impresora</h2>
     <div class="row"><button class="b" id="conectar">Conectar portátil (Bluetooth)</button><button class="b" id="conectarTodos">Ver todos los equipos</button></div>
     <div class="row" style="margin-top:8px"><button class="b" id="prueba">Imprimir prueba</button><button class="b" id="sistema">Imprimir con el sistema (oficina)</button></div>
+    <div class="row" style="margin-top:8px"><button class="b" id="regla">📏 Calibrar: imprimir regla</button></div>
+    <div id="calib" class="card" style="display:none;margin:10px 0 0;background:#fff7fb">
+      <b>Mira la regla impresa</b>
+      <div class="muted" style="margin:4px 0 8px">Cada número son milímetros. Escribe el número que quedó <b>justo en el borde izquierdo</b> de la etiqueta (si cayó entre dos, usa el más cercano, ej. 7.5).</div>
+      <div class="row"><input type="text" id="calibX" inputmode="decimal" placeholder="ej. 8"><button class="b p" id="calibOk">Aplicar</button></div>
+    </div>
     <div class="muted" style="margin-top:6px">La portátil se usa abriendo esta página en <b>Bluefy</b>. La impresora de la oficina (SAT) se usa desde el computador con «Imprimir con el sistema».</div>
     <div class="prog" id="prog"><i></i></div>
     <div id="log" style="display:none"></div>
@@ -193,8 +199,8 @@ canvas#prev{width:100%;border:2px dashed var(--rosa);border-radius:10px;backgrou
       <div><label>Alinear etiquetas</label><select data-k="align"><option value="left">Izquierda</option><option value="center">Centro</option><option value="right">Derecha</option></select></div>
     </div>
     <div class="row">
-      <div><label>Mover a la derecha (mm, − izquierda)</label><input type="number" step="0.5" data-k="offX" inputmode="decimal"></div>
-      <div><label>Mover hacia abajo (mm, − arriba)</label><input type="number" step="0.5" data-k="offY" inputmode="decimal"></div>
+      <div><label>Mover a los lados (mm)</label><div class="step adj"><button type="button" data-adj="offX" data-d="-1">◀</button><input type="text" data-k="offX" readonly style="text-align:center;padding:8px 4px"><button type="button" data-adj="offX" data-d="1">▶</button></div></div>
+      <div><label>Mover arriba / abajo (mm)</label><div class="step adj"><button type="button" data-adj="offY" data-d="-1">▲</button><input type="text" data-k="offY" readonly style="text-align:center;padding:8px 4px"><button type="button" data-adj="offY" data-d="1">▼</button></div></div>
     </div>
     <label>Máximo de líneas del nombre</label>
     <select data-k="nameLines"><option value="1">1 línea</option><option value="2">2 líneas</option><option value="3">3 líneas</option></select>
@@ -617,6 +623,35 @@ $('#imprimir').onclick=async()=>{
   const rows=chunk(labels,S.cols);
   const ok=await trabajo(i=>renderRow(rows[i].concat(Array(S.cols-rows[i].length).fill(null)),S),rows.length);
   if(ok)recordSeq();
+};
+// ---- ajuste fino con botones (el teclado del iPhone no trae el signo menos) ----
+document.querySelectorAll('[data-adj]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.adj;S[k]=Math.round(((+S[k]||0)+(+b.dataset.d))*10)/10;saveS();
+  const el=document.querySelector('[data-k='+k+']');if(el)el.value=S[k];preview();
+  toast((k==='offX'?'Lados: ':'Arriba/abajo: ')+S[k]+' mm');
+});
+// ---- regla de calibración: marcas cada mm, número cada 5 mm, a todo el ancho de la impresora ----
+function reglaCanvas(){
+  const pw=Math.ceil(mm(S.printerMm)/8)*8,H=mm(S.labelH);
+  const c=document.createElement('canvas');c.width=pw;c.height=H;
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,pw,H);x.fillStyle='#000';
+  x.textAlign='center';x.textBaseline='top';x.font='bold 22px Arial';
+  for(let m=0;m*DPMM<pw;m++){const px=Math.round(m*DPMM);const L=m%5===0?Math.round(H*.45):m%1===0?Math.round(H*.18):0;x.fillRect(px,0,m%5===0?3:2,L);if(m%5===0&&m>0)x.fillText(String(m),px+1,L+4)}
+  x.fillRect(0,H-3,pw,3);
+  return c;
+}
+$('#regla').onclick=async()=>{
+  const ok=await trabajo(()=>reglaCanvas(),1);
+  $('#calib').style.display='block';$('#calibX').focus();
+};
+$('#calibOk').onclick=()=>{
+  const v=parseFloat(String($('#calibX').value).replace(',','.'));
+  if(isNaN(v)||v<0)return toast('Escribe el número del borde izquierdo');
+  S.align='left';S.offX=v;S.printerMm=Math.max(+S.printerMm||48,Math.ceil(v+S.cols*S.labelW+(S.cols-1)*S.colGap));saveS();
+  document.querySelectorAll('[data-k=printerMm]').forEach(e=>e.value=S.printerMm);
+  document.querySelectorAll('[data-k=align]').forEach(e=>e.value='left');
+  document.querySelectorAll('[data-k=offX]').forEach(e=>e.value=v);
+  preview();$('#calib').style.display='none';toast('Listo. Ahora toca «Imprimir prueba» 💗');
 };
 $('#prueba').onclick=async()=>{
   const it={code:'100000123',name:'Prueba',price:'$ 1.000'};
