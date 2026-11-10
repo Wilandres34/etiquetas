@@ -204,6 +204,9 @@ canvas#prev{width:100%;border:2px dashed var(--rosa);border-radius:10px;backgrou
   <div class="card">
     <h2>🔌 Envío a la impresora</h2>
     <label>Avance de papel al final (puntos, 0 = ninguno)</label><input type="number" data-k="feed" min="0" max="255" inputmode="numeric">
+    <label>Después de cada etiqueta</label>
+    <select data-k="salto"><option value="gap">Saltar a la siguiente etiqueta (recomendado)</option><option value="medida">Avanzar por medida (alto + espacio entre filas)</option></select>
+    <div class="muted" style="margin-top:4px">Si las etiquetas salen corridas, apaga la impresora y préndela, luego deja presionado el botón de avance hasta que saque 2 o 3 etiquetas en blanco: así aprende dónde empieza cada una.</div>
     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-k="ff"> Enviar «saltar a la siguiente etiqueta» al terminar</label>
     <label>Tamaño de paquete Bluetooth (bytes)</label>
     <select data-k="chunk"><option value="20">20 (lento, más seguro)</option><option value="100">100</option><option value="180">180</option><option value="240">240</option></select>
@@ -280,10 +283,11 @@ function barcode(code){
 //</barcode>
 
 // ============ ajustes ============
-const DEF={cols:2,copias:1,labelW:32,labelH:25,colGap:2,rowGap:3,printerMm:72,align:'center',offX:0,offY:0,
+const DEF={cols:1,copias:1,labelW:32,labelH:25,colGap:2,rowGap:2,printerMm:48,salto:'gap',align:'center',offX:0,offY:0,
  font:'sans',nameSize:20,codeSize:20,priceSize:24,nameLines:1,localSize:18,local:'',showLocal:true,barH:42,barW:92,dark:3,bold:true,showName:true,showCode:true,showPrice:false,
  feed:0,ff:false,chunk:180,svc:'',sheetUrl:'',sheetKey:''};
 let S=Object.assign({},DEF,LS.get('etq.ajustes',{}));
+if(!LS.get('etq.v2',false)){['cols','labelW','labelH','colGap','rowGap','printerMm','align','offX','offY','salto'].forEach(k=>S[k]=DEF[k]);LS.set('etq.ajustes',S);LS.set('etq.v2',true)}
 const saveS=()=>LS.set('etq.ajustes',S);
 const FONTS={sans:'Arial,Helvetica,sans-serif',redonda:'"Trebuchet MS","Avenir Next",sans-serif',serif:'Georgia,"Times New Roman",serif',maquina:'"Courier New",Courier,monospace',gruesa:'"Arial Black",Impact,sans-serif',cursiva:'"Snell Roundhand","Brush Script MT","Bradley Hand",cursive',globo:'"Chalkboard SE","Marker Felt","Comic Sans MS",cursive'};
 const THR=[100,125,150,175,205];
@@ -337,7 +341,7 @@ function drawLabel(ctx,x,y,W,H,it,s,border){
   ctx.restore();return bc.type;
 }
 function renderRow(items,s,o={}){
-  const W=mm(s.labelW),H=mm(s.labelH),cg=mm(s.colGap),rg=mm(s.rowGap);
+  const W=mm(s.labelW),H=mm(s.labelH),cg=mm(s.colGap),rg=s.salto==='gap'?0:mm(s.rowGap);
   const total=s.cols*W+(s.cols-1)*cg;
   const pw=o.tight?total:Math.ceil(mm(s.printerMm)/8)*8;
   let x0=o.tight?0:(s.align==='left'?0:s.align==='right'?pw-total:Math.round((pw-total)/2))+mm(s.offX);
@@ -598,7 +602,7 @@ async function trabajo(rowsFn,total){
   stop=false;$('#imprimir').disabled=true;$('#detener').style.display='block';
   try{
     await enviar(new Uint8Array([0x1B,0x40]));
-    for(let i=0;i<total;i++){await enviar(rasterCmd(rowsFn(i),S));progreso(i+1,total)}
+    for(let i=0;i<total;i++){await enviar(rasterCmd(rowsFn(i),S));if(S.salto==='gap')await enviar(new Uint8Array([0x1D,0x0C]));progreso(i+1,total)}
     if(+S.feed>0)await enviar(new Uint8Array([0x1B,0x4A,Math.min(255,+S.feed)]));
     if(S.ff)await enviar(new Uint8Array([0x0C]));
     toast('Listo 💗');return true;
@@ -677,7 +681,7 @@ $('#nNom').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault()
 const hojaOn=()=>/^https:\/\/script\.google\.com\//.test((S.sheetUrl||'').trim());
 function hojaEstado(t,ok){const e=$('#hojaEst');if(e){e.textContent=t;e.style.color=ok?'#1c8a4b':'#a07088'}}
 async function hoja(action,data){
-  const r=await fetch(S.sheetUrl.trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,clave:S.sheetKey||''},data||{}))});
+  const r=await fetch(S.sheetUrl.trim(),{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,clave:(S.sheetKey||'').trim()},data||{}))});
   const j=await r.json();
   if(!j.ok)throw new Error(j.error||'Error desconocido');
   return j;
@@ -693,7 +697,7 @@ async function traerHoja(silencioso){
     local=[...m.values()];saveP();
     if(cf.local&&!S.local){S.local=String(cf.local);saveS()}
     // Diseño de la etiqueta que el administrador guardó desde el portal
-    if(cf.diseno){try{const dz=JSON.parse(cf.diseno);['cols','labelW','labelH','colGap','rowGap','printerMm','align','offX','offY','font','nameSize','codeSize','priceSize','nameLines','localSize','local','showLocal','barH','barW','dark','bold','showName','showCode','showPrice'].forEach(k=>{if(dz[k]!==undefined)S[k]=dz[k]});saveS()}catch(e){}}
+    if(cf.diseno){try{const dz=JSON.parse(cf.diseno);['font','nameSize','codeSize','priceSize','nameLines','localSize','local','showLocal','barH','barW','dark','bold','showName','showCode','showPrice'].forEach(k=>{if(dz[k]!==undefined)S[k]=dz[k]});saveS()}catch(e){}}
     if(cf.siguiente!==undefined&&cf.siguiente!==''&&+cf.siguiente>AUTO.next)AUTO.next=+cf.siguiente;
     if(cf.prefijo!==undefined)AUTO.pre=String(cf.prefijo);
     if(+cf.digitos>0)AUTO.pad=+cf.digitos;
